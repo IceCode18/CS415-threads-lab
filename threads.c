@@ -3,59 +3,74 @@
 #include <pthread.h>
 #include <unistd.h>
 #include <semaphore.h>
-// #include <string.h>
 
 
 void *do_math(void *arg);
+void *producer_job(void *arg);
+void *consumer_job(void *arg);
 
 int sum;
 sem_t a_lock;
 
 int main(int argc, char **argv){
-    int num_threads;
-    pthread_t *threads;
-    sum = 0;
+    int total_threads;
+    pthread_t *threads_array;
+    const int BUFFER_SIZE = 3;
 
-    if(argc<2){
-        printf("Usage: %s [NUM ITERATIONS]\n", argv[0]);
-    }
-
-    num_threads = atoi(argv[1]);
-    threads = (pthread_t*) calloc(num_threads,sizeof(pthread_t));
-
-    if(sem_init(&a_lock,0,1) < 0){
-        perror("Error initializing sum_lock");
+    // Check number of inputs
+    if(argc > 1){
+        printf("Error: No input needed. Do not pass in an argument.\n");
         return 0;
     }
 
-    printf("Launching %d threads\n", num_threads);
-    for(int i=0; i<num_threads; i++){
+    printf("Enter desired number of producers/consumers: "); 
+    scanf("%d", &total_threads); 
+
+    // Initialize number of threads and threads array
+    total_threads *= 2;
+    threads_array = (pthread_t*) calloc(total_threads,sizeof(pthread_t));
+
+    // Initialize semaphores for Part B
+    if(sem_init(&a_lock,0,1) < 0){
+        perror("Error initializing sum_lock_A");
+        return 0;
+    }
+
+
+    // Launch threads
+    printf("Launching %d threads... ( %d producer(s) and %d consumer(s) )\n", total_threads, total_threads/2, total_threads/2);
+    for(int i=0; i<total_threads; i++){
         long thread_id = (long)i;
-        if(pthread_create(&threads[i], NULL, &do_math,(void *)thread_id) != 0){
-            perror("Error");
+        if( i%2 == 0){
+            if(pthread_create(&threads_array[i], NULL, &producer_job,(void *)thread_id) != 0){
+                perror("Error");
+            }
+        }else if( i%2 != 0){
+            if(pthread_create(&threads_array[i], NULL, &consumer_job,(void *)thread_id) != 0){
+                perror("Error");
+            }
         }
+        
     }
 
-    for(int i=0; i<num_threads; i++){
-        pthread_join(threads[i], NULL);
+    // Prevent threads from terminating early
+    for(int i=0; i<total_threads; i++){
+        pthread_join(threads_array[i], NULL);
     }
 
-    printf("Sum = %d\n", sum);
-
-    free(threads);
+    free(threads_array);
 
 }
 
-void *do_math(void *arg){
+// Producer Thread Job
+void *producer_job(void *arg){
     int t_id = (int)(long)arg;
-    int tmp;
-    printf("Thread %d launched . . . \n", t_id);
-    for(int n=0; n<100; n++){
-        sem_wait(&a_lock);
-        tmp = sum;
-        usleep(5);
-        tmp++;
-        sum = tmp;
-        sem_post(&a_lock);
-    }
+    printf("Producer %d launched . . . \n", t_id);
+
+}
+
+// Consumer Thread Job
+void *consumer_job(void *arg){
+    int t_id = (int)(long)arg;
+    printf("Consumer %d launched . . . \n", t_id);
 }
