@@ -130,3 +130,11 @@ void addtoB(){
     sem_post(&b_lock);
 }
 
+// Insert Operation
+void insert(int id, int value){
+    buffer[buffer_count] = value;
+    buffer_count++;
+    printf("Producer %d added %d to buffer. Buffer count: %d\n", id, value, buffer_count);
+    
+
+}
