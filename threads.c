@@ -25,7 +25,7 @@ int main(int argc, char **argv){
     sum_B = 0;
     buffer_count = 0;
     const int BUFFER_SIZE = 3;
-    
+
     // Check number of inputs
     if(argc > 1){
         printf("Error: No input needed. Do not pass in an argument.\n");
@@ -39,7 +39,7 @@ int main(int argc, char **argv){
     total_threads *= 2;
     threads_array = (pthread_t*) calloc(total_threads,sizeof(pthread_t));
     buffer = (int*) calloc(BUFFER_SIZE, sizeof(int));
-    
+
     // Initialize semaphores for Part B
     if(sem_init(&a_lock,0,1) < 0){
         perror("Error initializing sum_lock_A");
@@ -49,7 +49,7 @@ int main(int argc, char **argv){
         perror("Error initializing sum_lock_B");
         return 0;
     }
-        // Initialize semaphores for Part C
+    // Initialize semaphores for Part C
     if(sem_init(&s_lock,0,1) < 0){
         perror("Error initializing buffer_lock_S");
         return 0;
@@ -62,13 +62,13 @@ int main(int argc, char **argv){
         perror("Error initializing buffer_lock_E");
         return 0;
     }
-    
+
     //Seed for random generator 
     srand(time(0)); 
 
     // Launch threads
-    printf("Launching %d threads... ( %d producer(s) and %d consumer(s) )\n", total_threads, total_threads/2, total_threads/2);
-    for(int i=0; i<total_threads; i++){
+    printf("Launching a total of %d threads... ( %d producer(s) and %d consumer(s) )\n", total_threads, total_threads/2, total_threads/2);
+    for(int i=1; i<=total_threads; i++){
         long thread_id = (long)i;
         if( i%2 == 0){
             if(pthread_create(&threads_array[i], NULL, &producer_job,(void *)thread_id) != 0){
@@ -101,6 +101,15 @@ void *producer_job(void *arg){
         addtoA();
         addtoB();
     }
+    for(int m=0; m<20; m++){
+        int num = randomNumber();
+        printf("Producer %d generated %d.\n", t_id, num); //produce
+        sem_wait(&e_lock);
+        sem_wait(&s_lock);
+        insert(t_id, num); //append
+        sem_post(&s_lock);
+        sem_post(&n_lock);
+    }
 }
 
 // Consumer Thread Job
@@ -110,6 +119,14 @@ void *consumer_job(void *arg){
     for(int n=0; n<100; n++){
         addtoB();
         addtoA();
+    }
+    for(int m=0; m<20; m++){
+        sem_wait(&n_lock);
+        sem_wait(&s_lock);
+        int num = take(t_id); //take
+        sem_post(&s_lock);
+        sem_post(&e_lock);
+        printf("Consumer %d consumed %d.\n", t_id, num); //consume
     }
 }
 
