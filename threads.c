@@ -76,17 +76,38 @@ int main(int argc, char **argv){
 void *producer_job(void *arg){
     int t_id = (int)(long)arg;
     printf("Producer %d launched . . . \n", t_id);
-
+    for(int n=0; n<100; n++){
+        addtoA();
+        addtoB();
+    }
 }
 
 // Consumer Thread Job
 void *consumer_job(void *arg){
     int t_id = (int)(long)arg;
     printf("Consumer %d launched . . . \n", t_id);
-
+    for(int n=0; n<100; n++){
+        addtoB();
+        addtoA();
+    }
 }
 
 int randomNumber(){
     return (rand() % (100 + 1 - 2)) + 2;
+}
+
+// A operation
+void addtoA(){
+    sem_wait(&a_lock);
+    sum_A+=1;
+    usleep(randomNumber());
+    sem_post(&a_lock);
+}
+// B operation
+void addtoB(){
+    sem_wait(&b_lock);
+    sum_B+=3;
+    usleep(randomNumber());
+    sem_post(&b_lock);
 }
 
