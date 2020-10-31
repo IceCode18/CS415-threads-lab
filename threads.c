@@ -91,6 +91,13 @@ int main(int argc, char **argv){
     printf("B = %d\n", sum_B);
     free(threads_array);
     free(buffer);
+    
+    sem_destroy(&a_lock);
+    sem_destroy(&b_lock);
+    sem_destroy(&s_lock);
+    sem_destroy(&n_lock);
+    sem_destroy(&e_lock);
+    
 }
 
 // Producer Thread Job
