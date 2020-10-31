@@ -13,7 +13,8 @@ void addtoB();
 int randomNumber();
 
 int sum_A, sum_B;
-sem_t a_lock, b_lock;
+sem_t a_lock, b_lock, s_lock, n_lock, e_lock;
+
 int main(int argc, char **argv){
     int total_threads;
     pthread_t *threads_array;
@@ -40,6 +41,19 @@ int main(int argc, char **argv){
     }
     if(sem_init(&b_lock,0,1) < 0){
         perror("Error initializing sum_lock_B");
+        return 0;
+    }
+        // Initialize semaphores for Part C
+    if(sem_init(&s_lock,0,1) < 0){
+        perror("Error initializing buffer_lock_S");
+        return 0;
+    }
+    if(sem_init(&n_lock,0,0) < 0){
+        perror("Error initializing buffer_lock_N");
+        return 0;
+    }
+    if(sem_init(&e_lock,0,BUFFER_SIZE) < 0){
+        perror("Error initializing buffer_lock_E");
         return 0;
     }
     
