@@ -11,6 +11,8 @@ void *consumer_job(void *arg);
 void addtoA();
 void addtoB();
 int randomNumber();
+void insert(int id, int value);
+int take(int id);
 
 int sum_A, sum_B, buffer_count;
 sem_t a_lock, b_lock, s_lock, n_lock, e_lock;
@@ -137,4 +139,11 @@ void insert(int id, int value){
     printf("Producer %d added %d to buffer. Buffer count: %d\n", id, value, buffer_count);
     
 
+}
+// Take Operation
+int take(int id){
+    int num = buffer[buffer_count-1];
+    buffer_count--;
+    printf("Consumer %d removed %d from buffer. Buffer count: %d\n", id, num, buffer_count);   
+    return num;
 }
